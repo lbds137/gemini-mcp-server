@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 """
+Create a single-file version of v3 that can be deployed as an MCP server.
+This manually combines all necessary components.
+"""
+
+import os
+from pathlib import Path
+
+# Configuration
+PROJECT_ROOT = Path(__file__).parent.parent
+OUTPUT_FILE = PROJECT_ROOT / "server.py"
+
+def create_single_file_server():
+    """Create a single-file MCP server with all v3 components."""
+    
+    server_code = '''#!/usr/bin/env python3
+"""
 Gemini MCP Server v3.0.0 - Single File Version
 A Model Context Protocol server that enables Claude to collaborate with Google's Gemini AI models.
 This version combines all modular components into a single deployable file.
@@ -869,7 +885,7 @@ class AskGeminiTool(MCPTool):
         if not question:
             return ToolOutput(success=False, error="Question is required")
         
-        prompt = f"Context: {context}\n\n" if context else ""
+        prompt = f"Context: {context}\\n\\n" if context else ""
         prompt += f"Question: {question}"
         
         # Get model manager from context (will be injected)
@@ -879,9 +895,9 @@ class AskGeminiTool(MCPTool):
         
         try:
             response_text, model_used = model_manager.generate_content(prompt)
-            formatted_response = f"🤖 Gemini's Response:\n\n{response_text}"
+            formatted_response = f"🤖 Gemini's Response:\\n\\n{response_text}"
             if model_used != model_manager.primary_model_name:
-                formatted_response += f"\n\n[Model: {model_used}]"
+                formatted_response += f"\\n\\n[Model: {model_used}]"
             return ToolOutput(success=True, result=formatted_response)
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
@@ -951,9 +967,9 @@ Provide feedback on:
         
         try:
             response_text, model_used = model_manager.generate_content(prompt)
-            formatted_response = f"🔍 Gemini's Code Review:\n\n{response_text}"
+            formatted_response = f"🔍 Gemini's Code Review:\\n\\n{response_text}"
             if model_used != model_manager.primary_model_name:
-                formatted_response += f"\n\n[Model: {model_used}]"
+                formatted_response += f"\\n\\n[Model: {model_used}]"
             return ToolOutput(success=True, result=formatted_response)
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
@@ -999,8 +1015,8 @@ class BrainstormTool(MCPTool):
         
         prompt = f"Let's brainstorm about: {topic}"
         if constraints:
-            prompt += f"\n\nConstraints/Requirements: {constraints}"
-        prompt += "\n\nPlease provide creative ideas, approaches, and considerations."
+            prompt += f"\\n\\nConstraints/Requirements: {constraints}"
+        prompt += "\\n\\nPlease provide creative ideas, approaches, and considerations."
         
         model_manager = getattr(self, "_model_manager", None)
         if not model_manager:
@@ -1008,9 +1024,9 @@ class BrainstormTool(MCPTool):
         
         try:
             response_text, model_used = model_manager.generate_content(prompt)
-            formatted_response = f"💡 Gemini's Ideas:\n\n{response_text}"
+            formatted_response = f"💡 Gemini's Ideas:\\n\\n{response_text}"
             if model_used != model_manager.primary_model_name:
-                formatted_response += f"\n\n[Model: {model_used}]"
+                formatted_response += f"\\n\\n[Model: {model_used}]"
             return ToolOutput(success=True, result=formatted_response)
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
@@ -1070,9 +1086,9 @@ Please provide:
         
         try:
             response_text, model_used = model_manager.generate_content(prompt)
-            formatted_response = f"🧪 Gemini's Test Suggestions:\n\n{response_text}"
+            formatted_response = f"🧪 Gemini's Test Suggestions:\\n\\n{response_text}"
             if model_used != model_manager.primary_model_name:
-                formatted_response += f"\n\n[Model: {model_used}]"
+                formatted_response += f"\\n\\n[Model: {model_used}]"
             return ToolOutput(success=True, result=formatted_response)
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
@@ -1116,7 +1132,7 @@ class ExplainTool(MCPTool):
         if not topic:
             return ToolOutput(success=False, error="Topic is required")
         
-        prompt = f"Please explain the following at a {level} level:\n\n{topic}"
+        prompt = f"Please explain the following at a {level} level:\\n\\n{topic}"
         
         model_manager = getattr(self, "_model_manager", None)
         if not model_manager:
@@ -1124,9 +1140,9 @@ class ExplainTool(MCPTool):
         
         try:
             response_text, model_used = model_manager.generate_content(prompt)
-            formatted_response = f"📚 Gemini's Explanation:\n\n{response_text}"
+            formatted_response = f"📚 Gemini's Explanation:\\n\\n{response_text}"
             if model_used != model_manager.primary_model_name:
-                formatted_response += f"\n\n[Model: {model_used}]"
+                formatted_response += f"\\n\\n[Model: {model_used}]"
             return ToolOutput(success=True, result=formatted_response)
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
@@ -1305,7 +1321,7 @@ class GeminiMCPServerV3:
         if self.orchestrator:
             info["execution_stats"] = self.orchestrator.get_execution_stats()
         
-        return f"🤖 Gemini MCP Server v{__version__}\n\n{json.dumps(info, indent=2)}"
+        return f"🤖 Gemini MCP Server v{__version__}\\n\\n{json.dumps(info, indent=2)}"
 
     def run(self):
         """Run the MCP server."""
@@ -1333,3 +1349,18 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''
+    
+    print("✍️  Creating single-file v3 server...")
+    with open(OUTPUT_FILE, 'w') as f:
+        f.write(server_code)
+    
+    # Make executable
+    OUTPUT_FILE.chmod(0o755)
+    
+    print(f"✅ Successfully created {OUTPUT_FILE}")
+    print(f"   Size: {len(server_code) / 1024:.1f} KB")
+    print("\nThis file combines all v3 components into a single deployable MCP server.")
+
+if __name__ == "__main__":
+    create_single_file_server()
